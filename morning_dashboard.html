@@ -1,0 +1,930 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Morning Market Dashboard</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 34px;
+                background: #050505;
+                color: #f7f7f7;
+                font-family: Menlo, Consolas, Monaco, monospace;
+            }
+
+            .dashboard {
+                max-width: 1500px;
+                margin: 0 auto;
+            }
+
+            h1 {
+                text-align: center;
+                font-family: Georgia, serif;
+                font-style: italic;
+                font-weight: 400;
+                font-size: 26px;
+                letter-spacing: 0.5px;
+                margin: 0 0 6px 0;
+            }
+
+            .timestamp {
+                text-align: center;
+                color: #bcbcbc;
+                font-size: 12px;
+                margin-bottom: 28px;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+                gap: 22px;
+            }
+
+            .market-section {
+                border: 2px solid #ffffff;
+                border-radius: 14px;
+                overflow: hidden;
+                background: #0d0d0d;
+                box-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+            }
+
+            .market-section h2 {
+                margin: 0;
+                padding: 12px 16px;
+                border-bottom: 2px solid #ffffff;
+                font-size: 15px;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                background: #151515;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th {
+                padding: 9px 12px;
+                border-bottom: 1px solid #ffffff;
+                color: #ffffff;
+                font-size: 12px;
+                text-align: left;
+                text-transform: uppercase;
+                letter-spacing: 0.7px;
+                background: #090909;
+            }
+
+            td {
+                padding: 8px 12px;
+                border-bottom: 1px solid #3d3d3d;
+                font-size: 12px;
+            }
+
+            tr:nth-child(even) {
+                background: #1b1b1b;
+            }
+
+            tr:last-child td {
+                border-bottom: none;
+            }
+
+            tr:hover {
+                background: #2a2a2a;
+            }
+
+            .series {
+                width: 48%;
+                font-weight: 600;
+            }
+
+            .num {
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+                white-space: nowrap;
+            }
+
+            .positive {
+                color: #9cffb1 !important;
+            }
+
+            .negative {
+                color: #ff9c9c !important;
+            }
+
+            .avg-row td {
+                border-top: 2px solid #ffffff !important;
+                background: #151515 !important;
+                font-weight: 800;
+            }
+
+            .avg-row .series {
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+            }
+
+            .manual-rates-title {
+                margin: 38px 0 18px 0;
+                padding-top: 24px;
+                border-top: 2px solid #ffffff;
+                text-align: center;
+                font-family: Georgia, serif;
+                font-style: italic;
+                font-size: 22px;
+                letter-spacing: 0.8px;
+            }
+
+                         .yield-curve-title {
+                margin: 38px 0 18px 0;
+                padding-top: 24px;
+                border-top: 2px solid #ffffff;
+                text-align: center;
+                font-family: Georgia, serif;
+                font-style: italic;
+                font-size: 22px;
+                letter-spacing: 0.8px;
+            }
+
+            .yield-curve-grid {
+                grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+            }
+
+            .yield-curve-card {
+                padding-bottom: 10px;
+            }
+
+            .curve-date {
+                padding: 10px 16px 0 16px;
+                color: #bcbcbc;
+                font-size: 11px;
+            }
+
+            .yield-curve-svg {
+                width: 100%;
+                height: auto;
+                display: block;
+                padding: 6px 8px 10px 8px;
+                box-sizing: border-box;
+            }
+
+            .curve-line {
+                fill: none;
+                stroke: #ffffff;
+                stroke-width: 2.4;
+            }
+
+            .curve-point {
+                fill: #0d0d0d;
+                stroke: #ffffff;
+                stroke-width: 2;
+            }
+
+            .axis-line {
+                stroke: #ffffff;
+                stroke-width: 1;
+            }
+
+            .grid-line {
+                stroke: #333333;
+                stroke-width: 1;
+            }
+
+            .curve-label {
+                fill: #f7f7f7;
+                font-size: 10px;
+                font-weight: 700;
+            }
+
+            .axis-label {
+                fill: #bcbcbc;
+                font-size: 10px;
+            }
+
+            .curve-empty {
+                padding: 18px;
+                color: #bcbcbc;
+                font-size: 12px;
+            }
+
+            .manual-rates-grid {
+                grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            }
+
+            .live-rate-card td:nth-child(2),
+            .live-rate-card td:nth-child(3),
+            .live-rate-card th:nth-child(2),
+            .live-rate-card th:nth-child(3) {
+                text-align: right;
+            }
+
+            .sources-box {
+                margin-top: 22px;
+                border: 2px solid #ffffff;
+                border-radius: 14px;
+                background: #0d0d0d;
+                padding: 16px 18px;
+                box-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+            }
+
+            .sources-box h2 {
+                margin: 0 0 12px 0;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+            }
+
+            .source-line {
+                display: grid;
+                grid-template-columns: 180px 1fr;
+                gap: 12px;
+                font-size: 12px;
+                padding: 5px 0;
+                border-top: 1px solid #333333;
+            }
+
+            .source-line span {
+                color: #f7f7f7;
+                font-weight: 700;
+            }
+
+            .sources-box td {
+                color: #ffb4b4;
+                font-size: 11px;
+            }
+
+            @media (max-width: 700px) {
+                body {
+                    padding: 18px;
+                }
+
+                .grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .source-line {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="dashboard">
+            <h1>Morning Market Dashboard</h1>
+            <div class="timestamp">Updated: 2026-07-02 01:29:12</div>
+
+            <div class="grid">
+                
+            <section class="market-section">
+                <h2>Equity Indices</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series</th>
+                            <th>Value</th>
+                            <th>Change</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr class="">
+                    <td class="series">Dow Jones Industrial Average</td>
+                    <td class="num">52,305.24</td>
+                    <td class="num negative">-13.9609</td>
+                    <td class="num negative">-0.03%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">FTSE 100</td>
+                    <td class="num">10,478.30</td>
+                    <td class="num negative">-18.7998</td>
+                    <td class="num negative">-0.18%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Nasdaq Composite</td>
+                    <td class="num">26,040.03</td>
+                    <td class="num negative">-173.6914</td>
+                    <td class="num negative">-0.66%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Nikkei 225</td>
+                    <td class="num">69,517.58</td>
+                    <td class="num negative">-957.3828</td>
+                    <td class="num negative">-1.36%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Russell 2000</td>
+                    <td class="num">3,012.59</td>
+                    <td class="num negative">-11.7800</td>
+                    <td class="num negative">-0.39%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">S&P 500</td>
+                    <td class="num">7,483.23</td>
+                    <td class="num negative">-16.1299</td>
+                    <td class="num negative">-0.22%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">TSX Composite</td>
+                    <td class="num">34,857.00</td>
+                    <td class="num positive">+33.1992</td>
+                    <td class="num positive">+0.10%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">VIX</td>
+                    <td class="num">16.59</td>
+                    <td class="num positive">+0.1400</td>
+                    <td class="num positive">+0.85%</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </section>
+        
+            <section class="market-section">
+                <h2>FX</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series</th>
+                            <th>Value</th>
+                            <th>Change</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr class="">
+                    <td class="series">CAD/EUR</td>
+                    <td class="num">0.6166</td>
+                    <td class="num positive">+0.0002</td>
+                    <td class="num positive">+0.02%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">CAD/GBP</td>
+                    <td class="num">0.5313</td>
+                    <td class="num negative">-0.0001</td>
+                    <td class="num negative">-0.01%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">CAD/USD</td>
+                    <td class="num">0.7037</td>
+                    <td class="num negative">-0.0002</td>
+                    <td class="num negative">-0.03%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">USD/EUR</td>
+                    <td class="num">0.8762</td>
+                    <td class="num positive">+0.0005</td>
+                    <td class="num positive">+0.05%</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </section>
+        
+            <section class="market-section">
+                <h2>Commodities</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series</th>
+                            <th>Value</th>
+                            <th>Change</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr class="">
+                    <td class="series">Brent Crude Futures</td>
+                    <td class="num">70.8700</td>
+                    <td class="num negative">-0.7000</td>
+                    <td class="num negative">-0.98%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Copper Futures</td>
+                    <td class="num">6.1475</td>
+                    <td class="num positive">+0.0240</td>
+                    <td class="num positive">+0.39%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Gold Futures</td>
+                    <td class="num">4,069.8999</td>
+                    <td class="num positive">+1.5999</td>
+                    <td class="num positive">+0.04%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Natural Gas Futures</td>
+                    <td class="num">3.1980</td>
+                    <td class="num negative">-0.0220</td>
+                    <td class="num negative">-0.68%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Silver Futures</td>
+                    <td class="num">60.3600</td>
+                    <td class="num positive">+0.2750</td>
+                    <td class="num positive">+0.46%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">WTI Crude Futures</td>
+                    <td class="num">67.8700</td>
+                    <td class="num negative">-0.7100</td>
+                    <td class="num negative">-1.04%</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </section>
+        
+            <section class="market-section">
+                <h2>Mag 7</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series</th>
+                            <th>Value</th>
+                            <th>Change</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr class="">
+                    <td class="series">Alphabet</td>
+                    <td class="num">361.21</td>
+                    <td class="num positive">+3.8400</td>
+                    <td class="num positive">+1.07%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Amazon</td>
+                    <td class="num">241.70</td>
+                    <td class="num positive">+3.3600</td>
+                    <td class="num positive">+1.41%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Apple</td>
+                    <td class="num">294.38</td>
+                    <td class="num positive">+5.0200</td>
+                    <td class="num positive">+1.73%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Meta</td>
+                    <td class="num">612.91</td>
+                    <td class="num positive">+49.6200</td>
+                    <td class="num positive">+8.81%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Microsoft</td>
+                    <td class="num">384.28</td>
+                    <td class="num positive">+11.2600</td>
+                    <td class="num positive">+3.02%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Nvidia</td>
+                    <td class="num">197.58</td>
+                    <td class="num negative">-2.5100</td>
+                    <td class="num negative">-1.25%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Tesla</td>
+                    <td class="num">425.30</td>
+                    <td class="num positive">+4.7000</td>
+                    <td class="num positive">+1.12%</td>
+                </tr>
+            
+                <tr class="avg-row">
+                    <td class="series">Average 1D Move</td>
+                    <td class="num"></td>
+                    <td class="num "></td>
+                    <td class="num positive">+2.27%</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </section>
+        
+            <section class="market-section">
+                <h2>Top Canadian Stocks</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series</th>
+                            <th>Value</th>
+                            <th>Change</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr class="">
+                    <td class="series">Agnico Eagle Mines</td>
+                    <td class="num">220.36</td>
+                    <td class="num positive">+2.0500</td>
+                    <td class="num positive">+0.94%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Bank of Montreal</td>
+                    <td class="num">250.67</td>
+                    <td class="num positive">+0.5400</td>
+                    <td class="num positive">+0.22%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Brookfield Corp</td>
+                    <td class="num">60.51</td>
+                    <td class="num positive">+0.6600</td>
+                    <td class="num positive">+1.10%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">CIBC</td>
+                    <td class="num">163.32</td>
+                    <td class="num positive">+1.9400</td>
+                    <td class="num positive">+1.20%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Canadian Natural Resources</td>
+                    <td class="num">56.12</td>
+                    <td class="num positive">+0.2300</td>
+                    <td class="num positive">+0.41%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Enbridge</td>
+                    <td class="num">76.91</td>
+                    <td class="num negative">-1.7100</td>
+                    <td class="num negative">-2.18%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Royal Bank of Canada</td>
+                    <td class="num">293.68</td>
+                    <td class="num positive">+2.8000</td>
+                    <td class="num positive">+0.96%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Scotiabank</td>
+                    <td class="num">123.27</td>
+                    <td class="num positive">+0.3200</td>
+                    <td class="num positive">+0.26%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Shopify</td>
+                    <td class="num">162.26</td>
+                    <td class="num negative">-0.0600</td>
+                    <td class="num negative">-0.04%</td>
+                </tr>
+            
+                <tr class="">
+                    <td class="series">Toronto-Dominion Bank</td>
+                    <td class="num">172.44</td>
+                    <td class="num positive">+1.4300</td>
+                    <td class="num positive">+0.84%</td>
+                </tr>
+            
+                <tr class="avg-row">
+                    <td class="series">Average 1D Move</td>
+                    <td class="num"></td>
+                    <td class="num "></td>
+                    <td class="num positive">+0.37%</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </section>
+        
+            </div>
+
+            
+        <div class="manual-rates-title">Live Rates & Yields</div>
+        <div class="grid manual-rates-grid">
+            
+            <section class="market-section live-rate-card">
+                <h2>Canada Rates & Yields</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series</th>
+                            <th>Rate</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr>
+                    <td class="series">3 Month</td>
+                    <td class="num">2.260%</td>
+                    <td class="num ">+0.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">6 Month</td>
+                    <td class="num">2.340%</td>
+                    <td class="num negative">-1.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">1 Year</td>
+                    <td class="num">2.540%</td>
+                    <td class="num positive">+2.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">2 Year</td>
+                    <td class="num">2.730%</td>
+                    <td class="num negative">-2.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">5 Year</td>
+                    <td class="num">3.000%</td>
+                    <td class="num negative">-2.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">10 Year</td>
+                    <td class="num">3.370%</td>
+                    <td class="num negative">-2.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">Long Term</td>
+                    <td class="num">3.770%</td>
+                    <td class="num negative">-3.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">BoC Overnight Target Rate</td>
+                    <td class="num">2.250%</td>
+                    <td class="num ">+0.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">CORRA Overnight Rate</td>
+                    <td class="num">2.310%</td>
+                    <td class="num negative">-1.0 bps</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </section>
+        
+            <section class="market-section live-rate-card">
+                <h2>USA Rates & Yields</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series</th>
+                            <th>Rate</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr>
+                    <td class="series">3 Month</td>
+                    <td class="num">3.850%</td>
+                    <td class="num negative">-2.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">6 Month</td>
+                    <td class="num">4.000%</td>
+                    <td class="num negative">-1.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">1 Year</td>
+                    <td class="num">4.000%</td>
+                    <td class="num positive">+2.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">2 Year</td>
+                    <td class="num">4.170%</td>
+                    <td class="num positive">+3.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">5 Year</td>
+                    <td class="num">4.240%</td>
+                    <td class="num positive">+5.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">10 Year</td>
+                    <td class="num">4.480%</td>
+                    <td class="num positive">+4.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">30 Year</td>
+                    <td class="num">4.970%</td>
+                    <td class="num positive">+6.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">Effective Fed Funds Rate</td>
+                    <td class="num">3.630%</td>
+                    <td class="num ">+0.0 bps</td>
+                </tr>
+            
+                <tr>
+                    <td class="series">SOFR Repo Rate</td>
+                    <td class="num">3.680%</td>
+                    <td class="num positive">+6.0 bps</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </section>
+        
+        </div>
+        
+    
+
+            
+        <div class="yield-curve-title">Yield Curves</div>
+        <div class="grid yield-curve-grid">
+            
+        <section class="market-section yield-curve-card">
+            <h2>Canada Yield Curve</h2>
+            <div class="curve-date">Latest available date: 2026-06-30</div>
+
+            <svg class="yield-curve-svg" viewBox="0 0 640 300" role="img" aria-label="Canada yield curve">
+                
+            <line class="grid-line" x1="58" y1="242.0" x2="616" y2="242.0" />
+            <text class="axis-label" x="50" y="245.0" text-anchor="end">1.99%</text>
+        
+            <line class="grid-line" x1="58" y1="189.0" x2="616" y2="189.0" />
+            <text class="axis-label" x="50" y="192.0" text-anchor="end">2.50%</text>
+        
+            <line class="grid-line" x1="58" y1="136.0" x2="616" y2="136.0" />
+            <text class="axis-label" x="50" y="139.0" text-anchor="end">3.01%</text>
+        
+            <line class="grid-line" x1="58" y1="83.0" x2="616" y2="83.0" />
+            <text class="axis-label" x="50" y="86.0" text-anchor="end">3.53%</text>
+        
+            <line class="grid-line" x1="58" y1="30.0" x2="616" y2="30.0" />
+            <text class="axis-label" x="50" y="33.0" text-anchor="end">4.04%</text>
+        
+
+                <line class="axis-line" x1="58" y1="242" x2="616" y2="242" />
+                <line class="axis-line" x1="58" y1="30" x2="58" y2="242" />
+
+                <polyline class="curve-line" points="58.0,213.9 151.0,205.7 244.0,185.0 337.0,165.4 430.0,137.5 523.0,99.4 616.0,58.1" />
+
+                
+            <circle class="curve-point" cx="58.0" cy="213.9" r="4.5" />
+        
+            <circle class="curve-point" cx="151.0" cy="205.7" r="4.5" />
+        
+            <circle class="curve-point" cx="244.0" cy="185.0" r="4.5" />
+        
+            <circle class="curve-point" cx="337.0" cy="165.4" r="4.5" />
+        
+            <circle class="curve-point" cx="430.0" cy="137.5" r="4.5" />
+        
+            <circle class="curve-point" cx="523.0" cy="99.4" r="4.5" />
+        
+            <circle class="curve-point" cx="616.0" cy="58.1" r="4.5" />
+        
+                
+            <text class="curve-label" x="58.0" y="203.9" text-anchor="middle">2.26%</text>
+        
+            <text class="curve-label" x="151.0" y="195.7" text-anchor="middle">2.34%</text>
+        
+            <text class="curve-label" x="244.0" y="175.0" text-anchor="middle">2.54%</text>
+        
+            <text class="curve-label" x="337.0" y="155.4" text-anchor="middle">2.73%</text>
+        
+            <text class="curve-label" x="430.0" y="127.5" text-anchor="middle">3.00%</text>
+        
+            <text class="curve-label" x="523.0" y="89.4" text-anchor="middle">3.37%</text>
+        
+            <text class="curve-label" x="616.0" y="48.1" text-anchor="middle">3.77%</text>
+        
+                
+            <text class="axis-label" x="58.0" y="276" text-anchor="middle">3 Month</text>
+        
+            <text class="axis-label" x="151.0" y="276" text-anchor="middle">6 Month</text>
+        
+            <text class="axis-label" x="244.0" y="276" text-anchor="middle">1 Year</text>
+        
+            <text class="axis-label" x="337.0" y="276" text-anchor="middle">2 Year</text>
+        
+            <text class="axis-label" x="430.0" y="276" text-anchor="middle">5 Year</text>
+        
+            <text class="axis-label" x="523.0" y="276" text-anchor="middle">10 Year</text>
+        
+            <text class="axis-label" x="616.0" y="276" text-anchor="middle">Long Term</text>
+        
+            </svg>
+        </section>
+    
+        <section class="market-section yield-curve-card">
+            <h2>USA Yield Curve</h2>
+            <div class="curve-date">Latest available date: 2026-07-01</div>
+
+            <svg class="yield-curve-svg" viewBox="0 0 640 300" role="img" aria-label="USA yield curve">
+                
+            <line class="grid-line" x1="58" y1="242.0" x2="616" y2="242.0" />
+            <text class="axis-label" x="50" y="245.0" text-anchor="end">3.65%</text>
+        
+            <line class="grid-line" x1="58" y1="189.0" x2="616" y2="189.0" />
+            <text class="axis-label" x="50" y="192.0" text-anchor="end">4.03%</text>
+        
+            <line class="grid-line" x1="58" y1="136.0" x2="616" y2="136.0" />
+            <text class="axis-label" x="50" y="139.0" text-anchor="end">4.41%</text>
+        
+            <line class="grid-line" x1="58" y1="83.0" x2="616" y2="83.0" />
+            <text class="axis-label" x="50" y="86.0" text-anchor="end">4.79%</text>
+        
+            <line class="grid-line" x1="58" y1="30.0" x2="616" y2="30.0" />
+            <text class="axis-label" x="50" y="33.0" text-anchor="end">5.17%</text>
+        
+
+                <line class="axis-line" x1="58" y1="242" x2="616" y2="242" />
+                <line class="axis-line" x1="58" y1="30" x2="58" y2="242" />
+
+                <polyline class="curve-line" points="58.0,213.9 151.0,193.1 244.0,193.1 337.0,169.4 430.0,159.7 523.0,126.3 616.0,58.1" />
+
+                
+            <circle class="curve-point" cx="58.0" cy="213.9" r="4.5" />
+        
+            <circle class="curve-point" cx="151.0" cy="193.1" r="4.5" />
+        
+            <circle class="curve-point" cx="244.0" cy="193.1" r="4.5" />
+        
+            <circle class="curve-point" cx="337.0" cy="169.4" r="4.5" />
+        
+            <circle class="curve-point" cx="430.0" cy="159.7" r="4.5" />
+        
+            <circle class="curve-point" cx="523.0" cy="126.3" r="4.5" />
+        
+            <circle class="curve-point" cx="616.0" cy="58.1" r="4.5" />
+        
+                
+            <text class="curve-label" x="58.0" y="203.9" text-anchor="middle">3.85%</text>
+        
+            <text class="curve-label" x="151.0" y="183.1" text-anchor="middle">4.00%</text>
+        
+            <text class="curve-label" x="244.0" y="183.1" text-anchor="middle">4.00%</text>
+        
+            <text class="curve-label" x="337.0" y="159.4" text-anchor="middle">4.17%</text>
+        
+            <text class="curve-label" x="430.0" y="149.7" text-anchor="middle">4.24%</text>
+        
+            <text class="curve-label" x="523.0" y="116.3" text-anchor="middle">4.48%</text>
+        
+            <text class="curve-label" x="616.0" y="48.1" text-anchor="middle">4.97%</text>
+        
+                
+            <text class="axis-label" x="58.0" y="276" text-anchor="middle">3 Month</text>
+        
+            <text class="axis-label" x="151.0" y="276" text-anchor="middle">6 Month</text>
+        
+            <text class="axis-label" x="244.0" y="276" text-anchor="middle">1 Year</text>
+        
+            <text class="axis-label" x="337.0" y="276" text-anchor="middle">2 Year</text>
+        
+            <text class="axis-label" x="430.0" y="276" text-anchor="middle">5 Year</text>
+        
+            <text class="axis-label" x="523.0" y="276" text-anchor="middle">10 Year</text>
+        
+            <text class="axis-label" x="616.0" y="276" text-anchor="middle">30 Year</text>
+        
+            </svg>
+        </section>
+    
+        </div>
+    
+        </div>
+    </body>
+    </html>
+    
